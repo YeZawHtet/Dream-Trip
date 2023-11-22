@@ -1,22 +1,18 @@
 <?php
 require_once '../db.php';
-$package_name = mysqli_query($conn, "select * from trip_packages") or die(mysqli_error($con));
 $dataPoints = array(); // Initialize an empty array to store data points
-while ($row = mysqli_fetch_assoc($package_name)) {
-  $trip_name = $row["package_name"];
-  $trip_id = $row["package_id"];
-  $q = mysqli_query($conn, "SELECT package_id, COUNT(package_id) AS pcount 
-  FROM booking where package_id=$trip_id
-  GROUP BY package_id 
+$q = mysqli_query($conn, "SELECT tp.package_name, COUNT(bb.package_id) AS pcount 
+  FROM booking bb, trip_packages tp where bb.package_id=tp.package_id
+  GROUP BY bb.package_id 
   ORDER BY pcount DESC 
   LIMIT 3") or die(mysqli_error($conn));
-  while ($row1 = mysqli_fetch_assoc($q)) {
-    // Add data point to the array if the size is less than 3
-    if (count($dataPoints) < 3) {
-      $dataPoints[] = array("label" => $trip_name, "y" => $row1['pcount']);
-    } else {
-      break; // Exit the loop if the array size reaches 3
-    }
+while ($row1 = mysqli_fetch_assoc($q)) {
+  $trip_name = $row1['package_name'];
+  // Add data point to the array if the size is less than 3
+  if (count($dataPoints) < 3) {
+    $dataPoints[] = array("label" => $trip_name, "y" => $row1['pcount']);
+  } else {
+    break; // Exit the loop if the array size reaches 3
   }
 }
 ?>

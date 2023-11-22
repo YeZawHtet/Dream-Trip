@@ -1,30 +1,15 @@
 <?php
 require_once '../db.php';
-$package_name = mysqli_query($conn, "select * from trip_types") or die(mysqli_error($con));
 $dataPoints = array(); // Initialize an empty array to store data points
-while ($row = mysqli_fetch_assoc($package_name)) {
-  $trip_name = $row["trip_type_name"];
-  $trip_id = $row["trip_type_id"];
-  $q0 = mysqli_query($conn, "select package_id, Count(package_id) as tpCount from trip_packages where trip_type_id=$trip_id group by package_id order by tpCount ") or die(mysqli_error($conn));
-  while ($q0row = mysqli_fetch_assoc($q0)) {
-    $pt_id = $q0row["package_id"];
-    $q = mysqli_query($conn, "SELECT package_id, COUNT(package_id) AS pcount 
-  FROM booking where package_id=$pt_id
-  GROUP BY package_id 
-  ORDER BY pcount DESC 
-  LIMIT 3") or die(mysqli_error($conn));
 
-    while ($row1 = mysqli_fetch_assoc($q)) {
-      // Add data point to the array if the size is less than 3
-      if (count($dataPoints) < 3) {
-        $dataPoints[] = array("label" => $trip_name, "y" => $row1['pcount']);
-      } else {
-        break; // Exit the loop if the array size reaches 3
-      }
-    }
-  }
+// Fetch package counts for the current trip type
+$packageCountsQuery = mysqli_query($conn, "SELECT tt.trip_type_name, Count(bb.package_id) as pcount from trip_types tt, trip_packages tp, booking bb where tt.trip_type_id=tp.trip_type_id and tp.package_id=bb.package_id Group By tt.trip_type_name order by pcount DESC Limit 3") or die(mysqli_error($conn));
+while ($packageCountRow = mysqli_fetch_assoc($packageCountsQuery)) {
+  $tp_name = $packageCountRow['trip_type_name'];
+  $dataPoints[] = array("label" => $tp_name, "y" => $packageCountRow['pcount']);
 }
 ?>
+
 <!doctype html>
 <html lang="en">
 

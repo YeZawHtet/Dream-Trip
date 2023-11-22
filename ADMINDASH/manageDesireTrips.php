@@ -73,6 +73,7 @@
                       <td><?php echo $data['desire_date']; ?></td>
                       <td><?php echo $data['duration']; ?></td>
                       <td>
+                        <a class="btn btn-success" style="width: 100px;" href="?dID=<?php echo $data['desire_id']; ?>">Comfirm</a>
                         <a class="btn btn-danger" style="width: 100px;" href="?dID=<?php echo $data['desire_id']; ?>">Remove</a>
                       </td>
                     </tr>

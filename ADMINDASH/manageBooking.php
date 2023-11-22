@@ -79,9 +79,18 @@
                       <td><?php echo $data['booking_date']; ?></td>
                       <td><?= $data['status'] ?></td>
                       <td>
-                        <a class="btn btn-danger" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?> & action=1">Reject</a>
-                        <a class="btn btn-danger" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?> & action=2">Accept</a>
+                        <?php if ($data['status'] == 'Accepted') : ?>
+                          <a class="btn btn-success" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?>&action=2">Accept</a>
+                          <button class="btn btn-danger" style="width: 100px;" disabled>Reject</button>
+                        <?php elseif ($data['status'] == 'Rejected') : ?>
+                          <button class="btn btn-success" style="width: 100px;" disabled>Accept</button>
+                          <a class="btn btn-danger" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?>&action=1">Reject</a>
+                        <?php else : ?>
+                          <a class="btn btn-success" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?>&action=2">Accept</a>
+                          <a class="btn btn-danger" style="width: 100px;" href="?bID=<?php echo $data['booking_id']; ?>&action=1">Reject</a>
+                        <?php endif; ?>
                       </td>
+
                     </tr>
               <?php
                     $count += 1;

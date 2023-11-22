@@ -112,6 +112,7 @@
 
     .card h3 {
       font-size: 2.5rem;
+      text-align: center;
     }
 
     .card:hover .front {
@@ -161,7 +162,7 @@
   <hr>
   <!--hero section end-->
   <!--service section start-->
-  <section class="services"  data-aos="zoom-in">
+  <section class="services" data-aos="zoom-in">
     <h1 class="heading-title">Our services</h1>
     <div class="card-container">
       <?php
@@ -176,13 +177,27 @@
 
       $i = 0; // Initialize an index for the array
       while ($row = mysqli_fetch_array($q)) {
+        $trip_type_name = $row['trip_type_name'];
       ?>
         <div class="card" data-aos="zoom-in">
           <div class="front" style="background-image: url('ADMINDASH/assets/img/<?php echo $row['image']; ?>')">
           </div>
           <div class="back">
-            <h3><?php echo $row['trip_type_name']; ?></h3>
-            <p><?= $paragraphs[$i]; ?></p>
+            <?php
+            // Define the default link
+            $link = 'cruise.php';
+
+            // Determine the link based on $trip_type_name
+            if ($trip_type_name == "SightSeeing") {
+              $link = 'sightseeing.php';
+            } elseif ($trip_type_name == "Package Tour") {
+              $link = 'package.php';
+            }
+            ?>
+            <a href="<?= $link ?>">
+              <h3><?php echo $row['trip_type_name']; ?></h3>
+              <p><?= $paragraphs[$i]; ?></p>
+            </a>
           </div>
         </div>
       <?php
@@ -243,7 +258,6 @@
     $tID = $_POST['tpID'];
     $date = $_POST['date'];
     $duration = $_POST['dTime'];
-
     if (!isset($_SESSION['customer_id'])) {
       echo "<script> alert('You Need to Login First!'); location.assign('login.php');</script>";
     } else {
@@ -255,7 +269,7 @@
         echo "<script> alert('Desire trip already exists!'); location.assign('index.php');</script>";
       } else {
         // Insert a new desire trip if it doesn't already exist
-        $insertQuery = "INSERT INTO desire_trips (customer_id, trip_type_id, desire_date, duration) VALUES ($cusID, $tID, '$date', $duration)";
+        $insertQuery = "INSERT INTO desire_trips (customer_id, trip_type_id, desire_date, duration) VALUES ($cusID, $tID, '$date', '$duration')";
         $insertResult = mysqli_query($conn, $insertQuery);
 
         if ($insertResult) {
