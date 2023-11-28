@@ -3,7 +3,12 @@ require_once '../db.php';
 $dataPoints = array(); // Initialize an empty array to store data points
 
 // Fetch package counts for the current trip type
-$packageCountsQuery = mysqli_query($conn, "SELECT tt.trip_type_name, Count(bb.package_id) as pcount from trip_types tt, trip_packages tp, booking bb where tt.trip_type_id=tp.trip_type_id and tp.package_id=bb.package_id Group By tt.trip_type_name order by pcount DESC Limit 3") or die(mysqli_error($conn));
+if (isset($_GET['selectedMonth'])) {
+  $selectedMonth = $_GET['selectedMonth'];
+  $packageCountsQuery = mysqli_query($conn, "SELECT tt.trip_type_name, Count(bb.package_id) as pcount from trip_types tt, trip_packages tp, booking bb where tt.trip_type_id=tp.trip_type_id and tp.package_id=bb.package_id and Month(bb.booking_date)=$selectedMonth Group By tt.trip_type_name order by pcount DESC Limit 3") or die(mysqli_error($conn));
+} else {
+  $packageCountsQuery = mysqli_query($conn, "SELECT tt.trip_type_name, Count(bb.package_id) as pcount from trip_types tt, trip_packages tp, booking bb where tt.trip_type_id=tp.trip_type_id and tp.package_id=bb.package_id Group By tt.trip_type_name order by pcount DESC Limit 3") or die(mysqli_error($conn));
+}
 while ($packageCountRow = mysqli_fetch_assoc($packageCountsQuery)) {
   $tp_name = $packageCountRow['trip_type_name'];
   $dataPoints[] = array("label" => $tp_name, "y" => $packageCountRow['pcount']);
@@ -33,32 +38,47 @@ while ($packageCountRow = mysqli_fetch_assoc($packageCountsQuery)) {
     <div id="layoutSidenav_content">
       <main>
         <?php
-        $qd = mysqli_query($conn, 'SELECT * FROM booking WHERE package_id = (SELECT package_id FROM trip_packages ORDER BY COUNT(package_id) DESC LIMIT 1)');
-        $row = mysqli_fetch_assoc($qd);
-        $booking_date = $row['booking_date'];
-        $month_number = date('m', strtotime($booking_date));
-        $monthNames = array(
-          1 => "January",
-          2 => "February",
-          3 => "March",
-          4 => "April",
-          5 => "May",
-          6 => "June",
-          7 => "July",
-          8 => "August",
-          9 => "September",
-          10 => "October",
-          11 => "November",
-          12 => "December"
-        );
-
-        if (isset($monthNames[$month_number])) {
-          $month = $monthNames[$month_number];
+        if (isset($_GET['selectedMonth'])) {
+          $selectedmonth = $_GET['selectedMonth'];
+          $currentYear = date('Y');
+          $month = date('F', strtotime("$currentYear-$selectedMonth-01"));
+          $month = "Only " . $month;
         } else {
-          $month = "Invalid Month"; // Handle invalid month numbers
+          $month = "The Whole Year Of";
         }
-        $year = date('Y', strtotime($booking_date));
+        $year = date('Y');
         ?>
+        <form method="get" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+          <div class="row">
+            <div class="col-md-3 mt-3 mb-3">
+              <select class="form-select" name="selectedMonth" id="selectMonth">
+                <option value="0">Select Month</option>
+                <?php
+                $monthNames = array(
+                  1 => "January",
+                  2 => "February",
+                  3 => "March",
+                  4 => "April",
+                  5 => "May",
+                  6 => "June",
+                  7 => "July",
+                  8 => "August",
+                  9 => "September",
+                  10 => "October",
+                  11 => "November",
+                  12 => "December"
+                );
+                foreach ($monthNames as $key => $value) {
+                  echo "<option value='$key'>$value</option>";
+                }
+                ?>
+              </select>
+            </div>
+            <div class="col-md-3 mt-3 mb-3">
+              <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+          </div>
+        </form>
         <script>
           window.onload = function() {
             var chart = new CanvasJS.Chart("chartContainer", {
@@ -83,7 +103,7 @@ while ($packageCountRow = mysqli_fetch_assoc($packageCountsQuery)) {
 </head>
 
 <body class="sb-nav-fixed" style="background-color: rgba(0,0,0,0.7);">
-  <div id="chartContainer" style="height: 80vh; width: 100%;"></div>
+  <div id="chartContainer" style="height: 65vh; width: 100%;"></div>
   <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
   </main>
   <!-- End manage Subjects -->

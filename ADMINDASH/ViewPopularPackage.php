@@ -1,11 +1,21 @@
 <?php
 require_once '../db.php';
 $dataPoints = array(); // Initialize an empty array to store data points
-$q = mysqli_query($conn, "SELECT tp.package_name, COUNT(bb.package_id) AS pcount 
+if (isset($_GET['selectedMonth'])) {
+  $selectedMonth = $_GET['selectedMonth'];
+  $q = mysqli_query($conn, "SELECT tp.package_name, COUNT(bb.package_id) AS pcount 
+  FROM booking bb, trip_packages tp where bb.package_id=tp.package_id And Month(bb.booking_date)=$selectedMonth
+  GROUP BY bb.package_id 
+  ORDER BY pcount DESC 
+  LIMIT 3") or die(mysqli_error($conn));
+} else {
+  $q = mysqli_query($conn, "SELECT tp.package_name, COUNT(bb.package_id) AS pcount 
   FROM booking bb, trip_packages tp where bb.package_id=tp.package_id
   GROUP BY bb.package_id 
   ORDER BY pcount DESC 
   LIMIT 3") or die(mysqli_error($conn));
+}
+
 while ($row1 = mysqli_fetch_assoc($q)) {
   $trip_name = $row1['package_name'];
   // Add data point to the array if the size is less than 3
@@ -39,32 +49,47 @@ while ($row1 = mysqli_fetch_assoc($q)) {
     <div id="layoutSidenav_content">
       <main>
         <?php
-        $qd = mysqli_query($conn, 'SELECT * FROM booking WHERE package_id = (SELECT package_id FROM trip_packages ORDER BY COUNT(package_id) DESC LIMIT 1)');
-        $row = mysqli_fetch_assoc($qd);
-        $booking_date = $row['booking_date'];
-        $month_number = date('m', strtotime($booking_date));
-        $monthNames = array(
-          1 => "January",
-          2 => "February",
-          3 => "March",
-          4 => "April",
-          5 => "May",
-          6 => "June",
-          7 => "July",
-          8 => "August",
-          9 => "September",
-          10 => "October",
-          11 => "November",
-          12 => "December"
-        );
-
-        if (isset($monthNames[$month_number])) {
-          $month = $monthNames[$month_number];
+        if (isset($_GET['selectedMonth'])) {
+          $selectedmonth = $_GET['selectedMonth'];
+          $currentYear = date('Y');
+          $month = date('F', strtotime("$currentYear-$selectedMonth-01"));
+          $month = "Only " . $month;
         } else {
-          $month = "Invalid Month"; // Handle invalid month numbers
+          $month = "The Whole Year Of";
         }
-        $year = date('Y', strtotime($booking_date));
+        $year = date('Y');
         ?>
+        <form method="get" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+          <div class="row">
+            <div class="col-md-3 mt-3 mb-3">
+              <select class="form-select" name="selectedMonth" id="selectMonth">
+                <option value="0">Select Month</option>
+                <?php
+                $monthNames = array(
+                  1 => "January",
+                  2 => "February",
+                  3 => "March",
+                  4 => "April",
+                  5 => "May",
+                  6 => "June",
+                  7 => "July",
+                  8 => "August",
+                  9 => "September",
+                  10 => "October",
+                  11 => "November",
+                  12 => "December"
+                );
+                foreach ($monthNames as $key => $value) {
+                  echo "<option value='$key'>$value</option>";
+                }
+                ?>
+              </select>
+            </div>
+            <div class="col-md-3 mt-3 mb-3">
+              <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+          </div>
+        </form>
         <script>
           window.onload = function() {
             var chart = new CanvasJS.Chart("chartContainer", {
@@ -89,7 +114,7 @@ while ($row1 = mysqli_fetch_assoc($q)) {
 </head>
 
 <body class="sb-nav-fixed" style="background-color: rgba(0,0,0,0.7);">
-  <div id="chartContainer" style="height: 80vh; width: 100%;"></div>
+  <div id="chartContainer" style="height: 65vh; width: 100%;"></div>
   <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
   </main>
   <!-- End manage Subjects -->
