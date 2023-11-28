@@ -47,6 +47,7 @@ html::-webkit-scrollbar-thumb {
   background-color: var(--main-color);
 }
 
+
 /* common */
 @keyframes fadeIn {
   0% {

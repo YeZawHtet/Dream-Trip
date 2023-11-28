@@ -61,7 +61,7 @@
       width: 100%;
       height: 100%;
       position: absolute;
-      transition: transform 0.8s;
+      transition: opacity 1.5s;
       box-shadow: 0 0 5px 2px rgba(50, 50, 50, 0.25);
       backface-visibility: hidden;
     }
@@ -89,7 +89,7 @@
 
     .back {
       background-color: #4CAF50;
-      transform: rotateY(180deg);
+      opacity: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -108,11 +108,11 @@
     }
 
     .card:hover .front {
-      transform: rotateY(180deg);
+      opacity: 0;
     }
 
     .card:hover .back {
-      transform: rotateY(0deg);
+      opacity: 1;
     }
   </style>
 </head>

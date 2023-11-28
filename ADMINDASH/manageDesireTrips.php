@@ -73,7 +73,6 @@
                       <td><?php echo $data['desire_date']; ?></td>
                       <td><?php echo $data['duration']; ?></td>
                       <td>
-                        <a class="btn btn-success" style="width: 100px;" href="?dID=<?php echo $data['desire_id']; ?>">Comfirm</a>
                         <a class="btn btn-danger" style="width: 100px;" href="?dID=<?php echo $data['desire_id']; ?>">Remove</a>
                       </td>
                     </tr>
@@ -100,7 +99,7 @@ if (isset($_REQUEST['dID'])) {
   $dID = $_REQUEST['dID'];
   $q = mysqli_query($conn, "delete from desire_trips where desire_id=$dID");
   if ($q) {
-    echo "<script> alert ('Remove Success!'); location.assign('manageDesireTrips.php');</script>";
+    echo "<script> alert ('Successfully remove from the desire trip list!'); location.assign('manageDesireTrips.php');</script>";
   }
 }
 ?>
