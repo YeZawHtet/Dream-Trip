@@ -160,15 +160,23 @@
             $ttID = $_REQUEST['ttID'];
             $img = $_FILES['img']['name'];
             $tmp = $_FILES['img']['tmp_name'];
-            if ($tmp == NULL) {
-              $qq = mysqli_query($conn, "update trip_packages set package_name='$tpName', package_intro='$tpIntro', departure='$departure', duration='$duration', status='$status', trip_type_id=$ttID  where package_id=$tpID");
-              if ($qq) {
-                echo "<script> alert('Updated Successfully!'); location.assign('managePackages.php');</script>";
-              }
+            var_dump($tmp); // Debug line - check the value of $tmp
+
+            if (empty($tmp)) { // Checking if $tmp is empty or not
+              $query = "UPDATE trip_packages SET package_name=?, package_intro=?, departure=?, duration=?, status=?, trip_type_id=? WHERE package_id=?";
+              $stmt = mysqli_prepare($conn, $query);
+              mysqli_stmt_bind_param($stmt, "sssssii", $tpName, $tpIntro, $departure, $duration, $status, $ttID, $tpID);
             } else {
-              $q1 = mysqli_query($conn, "update trip_packages set package_name='$tpName', package_intro='$tpIntro', departure='$departure', duration='$duration', status='$status', trip_type_id=$ttID, image='$img' where package_id=$tpID");
+              $query = "UPDATE trip_packages SET package_name=?, package_intro=?, departure=?, duration=?, status=?, trip_type_id=?, image=? WHERE package_id=?";
+              $stmt = mysqli_prepare($conn, $query);
               move_uploaded_file($tmp, 'assets/img/' . $img);
-              echo "<script> alert('Updated Successfully'); location.assign('managePackages.php');</script>";
+              mysqli_stmt_bind_param($stmt, "sssssisi", $tpName, $tpIntro, $departure, $duration, $status, $ttID, $img, $tpID);
+            }
+
+            if (mysqli_stmt_execute($stmt)) {
+              echo "<script>alert('Updated Successfully!'); location.assign('managePackages.php');</script>";
+            } else {
+              echo "<script>alert('Error updating record');</script>";
             }
           }
           ?>
